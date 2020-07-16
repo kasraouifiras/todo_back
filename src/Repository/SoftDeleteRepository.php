@@ -1,45 +1,38 @@
 <?php
 
 
-namespace App\Repository;
+namespace App\Repository\Traits;
 
 
-use Carbon\Carbon;
+use App\Document\Todo;
 use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 
-class SoftDeleteRepository extends DocumentRepository
+Class SoftDeleteRepository extends DocumentRepository
 {
 
-    public function findByUserNotDeleted($user_id){
+    public function findAllNotDeleted(): array
+    {
         return $this->createQueryBuilder()
-            ->field('user_id')->equals($user_id)
-            ->field('deleted_at')->equals(null)
+            ->field('deletedAt')->equals(null)
             ->getQuery()
             ->execute()
             ->toArray();
     }
 
-    public function findAllNotDeleted(){
-       return $this->createQueryBuilder()
-           ->field('deleted_at')->equals(null)
-           ->getQuery()
-           ->execute()
-           ->toArray();
-    }
-
-    public function findNotDeleted($id){
+    public function findNotDeleted($id)
+    {
         return $this->createQueryBuilder()
-            ->field('deleted_at')->equals(null)
+            ->limit(1)
+            ->field('deletedAt')->equals(null)
             ->field('id')->equals($id)
             ->getQuery()
-            ->execute()
-            ->toArray();
+            ->getSingleResult();
     }
 
     public function delete($id){
         return $this->createQueryBuilder()
             ->updateOne()
-            ->field('deleted_at')->set(new Carbon())
+            ->field('deletedAt')->set(new \DateTime())
             ->field('id')->equals($id)
             ->getQuery()
             ->execute();
@@ -48,7 +41,7 @@ class SoftDeleteRepository extends DocumentRepository
     public function restore($id){
         return $this->createQueryBuilder()
             ->updateOne()
-            ->field('deleted_at')->set(null)
+            ->field('deletedAt')->set(null)
             ->field('id')->equals($id)
             ->getQuery()
             ->execute();

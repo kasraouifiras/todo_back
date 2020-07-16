@@ -2,17 +2,46 @@
 
 
 namespace App\Document;
-use App\Repository\SoftDeleteRepository;
+use App\Repository\TodoRepository;
+
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
+use Gedmo\Mapping\Annotation as Gedmo;
+
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableDocument;
+use Gedmo\Timestampable\Traits\TimestampableDocument;
+use JMS\Serializer\Annotation as Serializer;
 
 
 /**
  * Class Todo
  * @package App\Document
- * @MongoDB\Document(repositoryClass=SoftDeleteRepository::class)
+ * @MongoDB\Document(repositoryClass=TodoRepository::class)
  */
 class Todo
 {
+    use TimestampableDocument;
+    use SoftDeleteableDocument;
+
+    /**
+     * @MongoDB\Id
+     */
+    private $id;
+
+    /**
+     * @MongoDB\Field(type="string")
+     */
+    private $name;
+
+    /**
+     * @MongoDB\Field(type="bool")
+     */
+    private $completed = false;
+
+    /**
+     * @MongoDB\ReferenceOne(targetDocument=User::class, type="id")
+     */
+    private $userId;
+
     /**
      * @return mixed
      */
@@ -23,10 +52,12 @@ class Todo
 
     /**
      * @param mixed $id
+     * @return Todo
      */
-    public function setId($id): void
+    public function setId($id): Todo
     {
         $this->id = $id;
+        return $this;
     }
 
     /**
@@ -39,10 +70,12 @@ class Todo
 
     /**
      * @param mixed $name
+     * @return Todo
      */
-    public function setName($name): void
+    public function setName($name): Todo
     {
         $this->name = $name;
+        return $this;
     }
 
     /**
@@ -55,10 +88,12 @@ class Todo
 
     /**
      * @param mixed $completed
+     * @return Todo
      */
-    public function setCompleted($completed): void
+    public function setCompleted($completed): Todo
     {
         $this->completed = $completed;
+        return $this;
     }
 
     /**
@@ -66,75 +101,18 @@ class Todo
      */
     public function getUserId()
     {
-        return $this->user_id;
+        return $this->userId;
     }
 
     /**
-     * @param mixed $user_id
+     * @param mixed $userId
+     * @return Todo
      */
-    public function setUserId($user_id): void
+    public function setUserId($userId): Todo
     {
-        $this->user_id = $user_id;
+        $this->userId = $userId;
+        return $this;
     }
-
-    /**
-     * @return mixed
-     */
-    public function getCreatedAt()
-    {
-        return $this->created_at;
-    }
-
-    /**
-     * @param mixed $created_at
-     */
-    public function setCreatedAt($created_at): void
-    {
-        $this->created_at = $created_at;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getDeletedAt()
-    {
-        return $this->deleted_at;
-    }
-
-    /**
-     * @param mixed $deleted_at
-     */
-    public function setDeletedAt($deleted_at): void
-    {
-        $this->deleted_at = $deleted_at;
-    }
-
-    /**
-     * @MongoDB\Id
-     */
-    private $id;
-    /**
-     * @MongoDB\Field(type="string")
-     */
-    private $name;
-    /**
-     * @MongoDB\Field(type="bool")
-     */
-    private $completed;
-
-    /**
-     * @MongoDB\Field(type="object_id")
-     */
-    private $user_id;
-    /**
-     * @MongoDB\Field(type="date")
-     */
-    private $created_at;
-
-    /**
-     * @MongoDB\Field(type="date")
-     */
-    private $deleted_at;
 
 
 

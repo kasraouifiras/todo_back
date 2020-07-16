@@ -4,9 +4,7 @@
 namespace App\Controller;
 
 use App\Document\Todo;
-use Carbon\Carbon;
-use Doctrine\ODM\MongoDB\DocumentManager;
-use JMS\Serializer\SerializerBuilder;
+use App\Service\TodoService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,127 +12,85 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TodosController extends AbstractController
 {
-    /**
-     * @param DocumentManager $dm
-     * @return Response
-     * @throws \Doctrine\ODM\MongoDB\MongoDBException
-     * @Route("/api/todos", name="add_todo", methods={"POST"})
-     */
-    public function store(Request $request,DocumentManager $dm)
+
+    private $todoService;
+
+    public function __construct(TodoService $todoService)
     {
-        $serialize = SerializerBuilder::create()->build();
-        $input = json_decode($request->getContent(),true);
-        $todo = new Todo();
-        $todo->setName($input['name']);
-        $todo->setCompleted(false);
-        $todo->setUserId($this->getUser()->getId());
-        $todo->setCreatedAt(Carbon::now()->toDate());
-        $todo->setDeletedAt(null);
-        $dm->persist($todo);
-        $dm->flush();
-        $data = $serialize->serialize($todo,'json');
-
-
-        $res = ["data"=>$todo,"message"=>"todos stored","success"=>true];
-        $jres = $serialize->serialize($res,'json');
-        return new Response($jres);
+        $this->todoService = $todoService;
     }
 
+
     /**
-     * @param DocumentManager $dm
-     * @return Response
-     * @throws \Doctrine\ODM\MongoDB\MongoDBException
      * @Route("/api/todos", name="show_todos", methods={"GET"})
      */
-    public function showAll(DocumentManager $dm)
+    public function showAll()
     {
-        $todos = $dm->getRepository(Todo::class)->findByUserNotDeleted($this->getUser()->getId());
-        $serialize = SerializerBuilder::create()->build();
-        if(!$todos){
-            $res = ["message"=>"No todos found","success"=>false];
-            $jres = $serialize->serialize($res,'json');
-            return new Response($jres,400);
+        $todos = $this->todoService->getAll();
+        if(is_null($todos)){
+            return new Response("",Response::HTTP_NOT_FOUND);
         }
+        return new Response($todos);
+    }
 
-        $res = ["data"=>$todos,"message"=>"todos found","success"=>true];
-        $jres = $serialize->serialize($res,'json');
-        return new Response($jres);
+
+    /**
+     * @Route("/api/todos/byuser", name="show_todos_byuser", methods={"GET"})
+     */
+    public function showUserTodos()
+    {
+        $todos = $this->todoService->getUserTodos($this->getUser()->getId());
+        if(is_null($todos)){
+            return new Response("",Response::HTTP_NOT_FOUND);
+        }
+        return new Response($todos);
     }
 
     /**
-     * @param DocumentManager $dm
-     * @return Response
-     * @throws \Doctrine\ODM\MongoDB\MongoDBException
+     * @param $id
      * @Route("/api/todos/{id}", name="show_todo", methods={"GET"})
      */
-    public function show($id,DocumentManager $dm)
+    public function show($id)
     {
-        $todo = $dm->getRepository(Todo::class)->findNotDeleted($id);
-        $serialize = SerializerBuilder::create()->build();
-        if(!$todo){
-            $res = ["message"=>"No todo with this id","success"=>false];
-            $jres = $serialize->serialize($res,'json');
-            return new Response($jres,400);
+        $todo = $this->todoService->get($id);
+        if(is_null($todo)){
+            return new Response("",Response::HTTP_NOT_FOUND);
         }
+        return new Response($todo);
+    }
 
-        $res = ["data"=>$todo,"message"=>"todos found","success"=>true];
-        $jres = $serialize->serialize($res,'json');
-        return new Response($jres);
+
+    /**
+     * @param Request $request
+     * @Route("/api/todos", name="add_todo", methods={"POST"})
+     */
+    public function post(Request $request)
+    {
+        $todo = $this->todoService->post($request->getContent(),$this->getUser()->getId());
+        return new Response($todo);
     }
 
     /**
-     * @param DocumentManager $dm
-     * @return Response
-     * @throws \Doctrine\ODM\MongoDB\MongoDBException
      * @Route("/api/todos/{id}", name="update_todo", methods={"PUT","PATCH"})
      */
-    public function update(Request $request,$id,DocumentManager $dm)
+    public function update(Request $request,$id)
     {
-        $input = json_decode($request->getContent(),true);
-        $todo = $dm->getRepository(Todo::class)->find($id);
-        $serialize = SerializerBuilder::create()->build();
-        if(!$todo){
-            $res = ["message"=>"No todo with this id","success"=>false];
-            $jres = $serialize->serialize($res,'json');
-            return new Response($jres,400);
+        $todo = $this->todoService->update($request->getContent(),$id);
+        if(is_null($todo)){
+            return new Response("",Response::HTTP_NOT_FOUND);
         }
-
-        if(isset($input['name']))
-            $todo->setName($input['name']);
-        if(isset($input['completed']))
-            $todo->setCompleted($input['completed']);
-
-        $dm->flush();
-
-        $res = ["data"=>$todo,"message"=>"todo updated","success"=>true];
-        $jres = $serialize->serialize($res,'json');
-        return new Response($jres);
-    }
+        return new Response($todo);
+}
 
     /**
-     * @param DocumentManager $dm
-     * @return Response
-     * @throws \Doctrine\ODM\MongoDB\MongoDBException
      * @Route("/api/todos/{id}", name="delete_todo", methods={"DELETE"})
      */
-    public function delete($id,DocumentManager $dm)
+    public function delete($id)
     {
-        /** @var $todo Todo */
-        $todo = $dm->getRepository(Todo::class)->find($id);
-        $serialize = SerializerBuilder::create()->build();
-        if(!$todo){
-            $res = ["message"=>"No todo with this id","success"=>false];
-            $jres = $serialize->serialize($res,'json');
-            return new Response($jres,400);
+        $deleted = $this->todoService->delete($id);
+        if(!$deleted){
+            return new Response("",Response::HTTP_NOT_FOUND);
         }
-
-        $dm->getRepository(Todo::class)->delete($todo->getId());
-        $dm->flush();
-
-
-        $res = ["message"=>"todo deleted","success"=>true];
-        $jres = $serialize->serialize($res,'json');
-        return new Response($jres);
-
+        return new Response($deleted);
     }
 }

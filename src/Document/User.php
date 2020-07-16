@@ -2,19 +2,25 @@
 
 
 namespace App\Document;
-use App\Repository\SoftDeleteRepository;
+use App\Repository\UserRepository;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 use Doctrine\Bundle\MongoDBBundle\Validator\Constraints\Unique as MongoDBUnique;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableDocument;
+use Gedmo\Timestampable\Traits\TimestampableDocument;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 /**
  * Class User
  * @package App\Document
- * @MongoDB\Document(repositoryClass=SoftDeleteRepository::class)
+ * @MongoDB\Document(repositoryClass=UserRepository::class)
  * @MongoDBUnique(fields="email")
  */
 class User implements UserInterface
 {
+
+    use TimestampableDocument;
+    use SoftDeleteableDocument;
+
     /**
      * @MongoDB\Id
      */
@@ -23,12 +29,12 @@ class User implements UserInterface
     /**
      * @MongoDB\Field(type="string")
      */
-    private $first_name;
+    private $firstName;
 
     /**
      * @MongoDB\Field(type="string")
      */
-    private $last_name;
+    private $lastName;
 
     /**
      * @MongoDB\Field(type="string")
@@ -45,21 +51,6 @@ class User implements UserInterface
     private $password;
 
     /**
-     * @MongoDB\Field(type="date")
-     */
-    private $created_at;
-
-    /**
-     * @MongoDB\Field(type="date")
-     */
-    private $updated_at;
-
-    /**
-     * @MongoDB\Field(type="date")
-     */
-    private $deleted_at;
-
-    /**
      * @return mixed
      */
     public function getId()
@@ -68,27 +59,21 @@ class User implements UserInterface
     }
 
     /**
-     * @param mixed $id
-     */
-    public function setId($id): void
-    {
-        $this->id = $id;
-    }
-
-    /**
      * @return mixed
      */
     public function getFirstName()
     {
-        return $this->first_name;
+        return $this->firstName;
     }
 
     /**
-     * @param mixed $first_name
+     * @param mixed $firstName
+     * @return User
      */
-    public function setFirstName($first_name): void
+    public function setFirstName($firstName): User
     {
-        $this->first_name = $first_name;
+        $this->firstName = $firstName;
+        return $this;
     }
 
     /**
@@ -96,15 +81,17 @@ class User implements UserInterface
      */
     public function getLastName()
     {
-        return $this->last_name;
+        return $this->lastName;
     }
 
     /**
      * @param mixed $last_name
+     * @return User
      */
-    public function setLastName($last_name): void
+    public function setLastName($lastName): User
     {
-        $this->last_name = $last_name;
+        $this->lastName = $lastName;
+        return $this;
     }
 
     /**
@@ -117,10 +104,12 @@ class User implements UserInterface
 
     /**
      * @param mixed $email
+     * @return User
      */
-    public function setEmail($email): void
+    public function setEmail($email): User
     {
         $this->email = $email;
+        return $this;
     }
 
 
@@ -134,58 +123,12 @@ class User implements UserInterface
 
     /**
      * @param mixed $password
+     * @return User
      */
-    public function setPassword($password): void
+    public function setPassword($password): User
     {
         $this->password = $password;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCreatedAt()
-    {
-        return $this->created_at;
-    }
-
-    /**
-     * @param mixed $created_at
-     */
-    public function setCreatedAt($created_at): void
-    {
-        $this->created_at = $created_at;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getUpdatedAt()
-    {
-        return $this->updated_at;
-    }
-
-    /**
-     * @param mixed $updated_at
-     */
-    public function setUpdatedAt($updated_at): void
-    {
-        $this->updated_at = $updated_at;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getDeletedAt()
-    {
-        return $this->deleted_at;
-    }
-
-    /**
-     * @param mixed $deleted_at
-     */
-    public function setDeletedAt($deleted_at): void
-    {
-        $this->deleted_at = $deleted_at;
+        return $this;
     }
 
     /**
