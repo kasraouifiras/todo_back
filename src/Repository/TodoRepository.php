@@ -18,4 +18,16 @@ class TodoRepository extends SoftDeleteRepository
             ->execute()
             ->toArray();
     }
+
+    public function clearCompleted($userId)
+    {
+        return $this->createQueryBuilder()
+            ->updateMany()
+            ->field('userId')->equals(new ObjectId($userId))
+            ->field('completed')->equals(true)
+            ->field('deletedAt')->equals(null)
+            ->field('deletedAt')->set(new \DateTime())
+            ->getQuery()
+            ->execute();
+    }
 }

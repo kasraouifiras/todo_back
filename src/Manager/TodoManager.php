@@ -55,13 +55,24 @@ class TodoManager
         if(is_null($todo)){
             return null;
         }
+        var_dump($newData);
         foreach ($newData as $key=>$value){
             switch ($key){
                 case 'name':{
                     $todo->setName($value);
+                    break;
                 }
                 case 'completed':{
                     $todo->setCompleted($value);
+                    break;
+                }
+                case 'pinned':{
+                    $todo->setPinned($value);
+                    break;
+                }
+                case 'color':{
+                    $todo->setColor($value);
+                    break;
                 }
             }
         }
@@ -85,6 +96,12 @@ class TodoManager
             return false;
         }
         $this->getTodoRepository()->delete($id);
+        $this->dm->flush();
+        return true;
+    }
+
+    public function clearCompleted($userId){
+        $this->getTodoRepository()->clearCompleted($userId);
         $this->dm->flush();
         return true;
     }

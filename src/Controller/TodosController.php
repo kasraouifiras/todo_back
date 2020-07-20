@@ -83,6 +83,19 @@ class TodosController extends AbstractController
 }
 
     /**
+     * @Route("/api/todos/completed", name="delete_completed_todo", methods={"DELETE"})
+     */
+    public function clearCompleted()
+    {
+        var_dump($this->getUser()->getId());
+        $deleted = $this->todoService->clearCompleted($this->getUser()->getId());
+        if(!$deleted){
+            return new Response("",Response::HTTP_NOT_FOUND);
+        }
+        return new Response($deleted);
+    }
+
+    /**
      * @Route("/api/todos/{id}", name="delete_todo", methods={"DELETE"})
      */
     public function delete($id)
@@ -93,4 +106,6 @@ class TodosController extends AbstractController
         }
         return new Response($deleted);
     }
+
+
 }

@@ -71,4 +71,9 @@ class TodoService
         return $this->serializer->serialize($deleted, 'json');
     }
 
+    public function clearCompleted($userId){
+        $deleted = $this->todoManager->clearCompleted($userId);
+        return $this->serializer->serialize($deleted, 'json');
+    }
+
 }

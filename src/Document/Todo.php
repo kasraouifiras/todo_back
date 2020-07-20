@@ -38,6 +38,16 @@ class Todo
     private $completed = false;
 
     /**
+     * @MongoDB\Field(type="bool")
+     */
+    private $pinned = false;
+
+    /**
+     * @MongoDB\Field(type="string")
+     */
+    private $color = "#ffffff";
+
+    /**
      * @MongoDB\ReferenceOne(targetDocument=User::class, type="id")
      */
     private $userId;
@@ -95,6 +105,59 @@ class Todo
         $this->completed = $completed;
         return $this;
     }
+
+    /**
+     * @return \DateTime
+     */
+    public function getDeletedAt(): \DateTime
+    {
+        return $this->deletedAt;
+    }
+
+    /**
+     * @param \DateTime $deletedAt
+     */
+    public function setDeletedAt(\DateTime $deletedAt): void
+    {
+        $this->deletedAt = $deletedAt;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPinned()
+    {
+        return $this->pinned;
+    }
+
+    /**
+     * @param mixed $pinned
+     * @return Todo
+     */
+    public function setPinned($pinned): Todo
+    {
+        $this->pinned = $pinned;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getColor()
+    {
+        return $this->color;
+    }
+
+    /**
+     * @param mixed $color
+     * @return Todo
+     */
+    public function setColor($color): Todo
+    {
+        $this->color = $color;
+        return $this;
+    }
+
 
     /**
      * @return mixed
